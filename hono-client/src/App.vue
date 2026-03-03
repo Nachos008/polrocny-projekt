@@ -1,61 +1,106 @@
-<script setup>
-import { ref } from 'vue'
-
-const users = ref([])
-
-async function fetchUsers() {
-  const response = await fetch('http://localhost:3000/users')
-  const usersResponse = await response.json()
-
-  users.value = usersResponse
-}
-
-async function deleteUser(index) {
-  const response = await fetch('http://localhost:3000/users/' + index, {
-    method: 'delete',
-  })
-
-  const deleteUserResponse = await response.text()
-
-  if (deleteUserResponse === 'ok') {
-    await fetchUsers()
-  }
-}
-
-const text = ref('')
-
-async function addUser() {
-  const response = await fetch('http://localhost:3000/users', {
-    method: 'post',
-    headers: {
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify({
-      newUsername: text.value,
-    }),
-  })
-
-  const responseText = await response.text()
-
-  if (responseText === 'ok') {
-    await fetchUsers()
-  }
-}
-</script>
-
 <template>
-  <button @click="fetchUsers()">Get all users</button>
+  <div class="flex h-screen bg-bg-950">
+    <!-- Sidebar -->
+    <aside class="w-52 gap-3 bg-bg-900 flex flex-col py-4 border-r border-border-800">
 
-  <ul>
-    <li v-for="(user, index) in users" @click="deleteUser(index)">
-      {{ user.toLowerCase() }}
-    </li>
-  </ul>
+      <!-- Logo -->
+      <div class="flex items-center gap-2 px-4 pb-6 pt-1">
+        <svg class="w-6 h-6 text-accent-400" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+        <span class="text-text-100 font-semibold text-base">Logo</span>
+      </div>
 
-  <h1>{{ text }}</h1>
+      <!-- Main nav -->
+      <nav class="flex flex-col px-2 flex-1 gap-0">
+        <RouterLink to="/store" class="nav-link">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1.5 7h13M7 13l-1-4m6 4v4m4-4v4"/></svg>
+          Store
+        </RouterLink>
+        <RouterLink to="/library" class="nav-link">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20M4 4.5A2.5 2.5 0 016.5 2H20v20H6.5A2.5 2.5 0 014 19.5z"/></svg>
+          Library
+        </RouterLink>
+        <RouterLink to="/profile" class="nav-link">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z"/></svg>
+          Profile
+        </RouterLink>
+        <RouterLink to="/settings" class="nav-link">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          Settings
+        </RouterLink>
+      </nav>
 
-  <div>
-    <input type="text" v-model="text" />
-    <button @click="addUser()">Add</button>
+      <!-- Bottom actions -->
+      <div class="flex flex-col gap-1 px-2 border-t border-border-800 pt-3 mt-3">
+        <button class="nav-link nav-link--accent w-full text-left">
+          <svg class="w-4 h-4 text-accent-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          Add Friends
+        </button>
+        <button class="nav-link-logout w-full text-left ">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+          Logout
+        </button>
+      </div>
+
+    </aside>
+
+    <!-- Page content -->
+    <main class="flex-1 p-6 bg-bg-950 text-accent-300">
+      <RouterView />
+    </main>
   </div>
 </template>
+
+<style scoped>
+@reference './styles.css';
+
+.nav-link {
+  @apply flex items-center gap-3 px-3 py-4 rounded-lg text-lg text-text-300;
+  transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out, transform 0.15s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.nav-link:hover {
+  /* @apply text-text-100 bg-panel-900; */
+  @apply text-accent-400;
+  transform: translatex(20px);
+}
+
+.nav-link:active {
+  transform: translateX(2px) scale(0.97);
+  animation: click-flash 2.67s ease-in-out;
+}
+
+.nav-link-logout {
+  @apply flex items-center gap-3 px-3 py-4 rounded-lg text-lg text-text-300;
+  transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out, transform 0.15s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.nav-link-logout:hover {
+  /* @apply text-text-100 bg-panel-900; */
+  @apply text-danger-500;
+  transform: translatey(3px);
+}
+
+
+/* .nav-link--accent:hover {
+  @apply text-accent-400;
+} */
+
+@keyframes click-flash {
+  0%   { opacity: 1; }
+  30%  { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+.nav-link.router-link-active {
+  @apply text-accent-400  border-l-2 border-accent-300 rounded-l-none;
+  /* background-image: radial-gradient(circle at bottom right, oklch(0.84 0.20 145)  -400%, transparent 100%); */
+}
+
+.nav-link.router-link-active:hover {
+  transform: none;
+  @apply text-accent-400;
+}
+
+</style>

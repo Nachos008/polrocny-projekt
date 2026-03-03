@@ -1,1 +1,64 @@
 @import 'tailwindcss';
+
+@theme {
+
+  /* ========================= */
+  /* 🎨 BACKGROUND LAYERS */
+  /* ========================= */
+
+  --color-bg-950: oklch(0.12 0.01 260);   /* Main app background */
+  --color-bg-900: oklch(0.15 0.01 260);
+  --color-bg-850: oklch(0.18 0.015 260);
+
+  /* ========================= */
+  /* 🧱 PANELS / SURFACES */
+  /* ========================= */
+
+  --color-panel-900: oklch(0.20 0.02 255);  /* Cards */
+  --color-panel-850: oklch(0.23 0.02 255);
+  --color-panel-800: oklch(0.26 0.025 255);
+
+  /* ========================= */
+  /* 🟢 ACCENT GREEN (Neon) */
+  /* ========================= */
+
+  --color-accent-500: oklch(0.78 0.23 145);  /* Primary neon */
+  --color-accent-600: oklch(0.72 0.22 145);  /* Hover */
+  --color-accent-400: oklch(0.84 0.20 145);  /* Lighter */
+  --color-accent-300: oklch(0.90 0.15 145);  /* Soft */
+  --color-accent-200: oklch(0.95 0.08 145);  /* Very soft bg */
+
+  /* ========================= */
+  /* 📝 TEXT */
+  /* ========================= */
+
+  --color-text-100: oklch(0.97 0.01 260);  /* Primary white */
+  --color-text-300: oklch(0.75 0.02 260);  /* Secondary */
+  --color-text-500: oklch(0.55 0.02 260);  /* Muted */
+  --color-text-700: oklch(0.40 0.02 260);  /* Dim */
+
+  /* ========================= */
+  /* 🔲 BORDERS */
+  /* ========================= */
+
+  --color-border-800: oklch(0.28 0.01 260);
+  --color-border-700: oklch(0.35 0.015 260);
+  --color-border-accent: oklch(0.78 0.23 145);
+
+  /* ========================= */
+  /* ⚠ STATUS */
+  /* ========================= */
+
+  --color-danger-500: oklch(0.65 0.25 25);
+  --color-warning-500: oklch(0.85 0.18 85);
+  --color-info-500: oklch(0.75 0.15 240);
+
+}
+
+@utility glow {
+  box-shadow: 0 0 20px oklch(0.78 0.23 145 / 0.35);
+}
+
+@utility glow-sm {
+  box-shadow: 0 0 12px oklch(0.78 0.23 145 / 0.25);
+}
