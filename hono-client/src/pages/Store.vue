@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 
 // Search state
 const searchQuery = ref('')
-const selectedCategory = ref('all')
+const selectedCategories = ref([])
 const sortBy = ref('featured')
 
 // Placeholder data for games
@@ -80,7 +80,6 @@ const recommendedGames = [
 ]
 
 const categories = [
-  { id: 'all', name: 'All Games', icon: '🎮' },
   { id: 'action', name: 'Action', icon: '⚔️' },
   { id: 'rpg', name: 'RPG', icon: '🐉' },
   { id: 'racing', name: 'Racing', icon: '🏎️' },
@@ -89,35 +88,21 @@ const categories = [
   { id: 'adventure', name: 'Adventure', icon: '🗺️' }
 ]
 
-const news = [
-  {
-    id: 1,
-    game: 'Cyber Odyssey 2077',
-    thumbnail: 'https://placehold.co/150x150/1a1a2e/84cc16?text=News+1',
-    title: 'New DLC Expansion Released!',
-    description: 'Explore new districts and missions in the latest expansion',
-    timestamp: '2 hours ago'
-  },
-  {
-    id: 2,
-    game: 'Dragon Quest',
-    thumbnail: 'https://placehold.co/150x150/1a1a2e/84cc16?text=News+2',
-    title: 'Summer Sale - 40% Off',
-    description: 'Limited time offer on this epic RPG adventure',
-    timestamp: '5 hours ago'
-  },
-  {
-    id: 3,
-    game: 'Speed Legends',
-    thumbnail: 'https://placehold.co/150x150/1a1a2e/84cc16?text=News+3',
-    title: 'New Racing Tracks Added',
-    description: 'Experience the thrill on 5 new challenging circuits',
-    timestamp: '1 day ago'
-  }
-]
-
 // Computed
-const isSearchActive = computed(() => searchQuery.value.trim().length > 0)
+const hasFiltersActive = computed(() => {
+  return searchQuery.value.trim().length > 0 || selectedCategories.value.length > 0
+})
+
+// const isSearchActive = computed(() => searchQuery.value.trim().length > 0)
+
+function getGameCategoryTokens(game) {
+  // Supports single genres ("Action") and future multi-genre strings ("Action, RPG").
+  return game.genre
+    .toLowerCase()
+    .split(/[,/|&]/)
+    .map(token => token.trim())
+    .filter(Boolean)
+}
 
 const filteredGames = computed(() => {
   let games = [...recommendedGames]
@@ -131,11 +116,12 @@ const filteredGames = computed(() => {
     )
   }
   
-  // Filter by category
-  if (selectedCategory.value !== 'all') {
-    games = games.filter(game => 
-      game.genre.toLowerCase() === selectedCategory.value.toLowerCase()
-    )
+  // Filter by selected categories using AND logic (must match all selected).
+  if (selectedCategories.value.length > 0) {
+    games = games.filter(game => {
+      const gameCategories = getGameCategoryTokens(game)
+      return selectedCategories.value.every(categoryId => gameCategories.includes(categoryId))
+    })
   }
   
   // Sort
@@ -159,7 +145,12 @@ function toggleFavorite(gameId) {
 }
 
 function selectCategory(categoryId) {
-  selectedCategory.value = categoryId
+  if (selectedCategories.value.includes(categoryId)) {
+    selectedCategories.value = selectedCategories.value.filter(id => id !== categoryId)
+    return
+  }
+
+  selectedCategories.value = [...selectedCategories.value, categoryId]
 }
 
 function buyGame(game) {
@@ -169,75 +160,75 @@ function buyGame(game) {
 
 <template>
   <div class="w-full max-w-7xl mx-auto">
-    
-    <!-- TOP BAR - SEARCH -->
-    <div class="mb-8">
-      <row>
-        <col class="col-10">
-          <div class="relative">
-            <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <circle cx="11" cy="11" r="8"/>
-              <path d="m21 21-4.35-4.35"/>
-            </svg>
-            <input 
-            v-model="searchQuery"
-            type="text" 
-            placeholder="Search for games..." 
-            class="w-full bg-panel-900 text-text-100 pl-12 pr-4 py-4 rounded-lg border border-border-800 focus:border-accent-500 focus:outline-none transition-colors"
-            />
-        </col>
-        </div>
-      </row>
-      
-      <!-- Search filters (only show when searching) -->
-      <div v-if="isSearchActive" class="flex gap-4 mt-4">
-        <select 
-          v-model="selectedCategory"
-          class="bg-panel-900 text-text-100 px-4 py-2 rounded-lg border border-border-800 focus:border-accent-500 focus:outline-none transition-colors"
+    <div class="mb-8 rounded-2xl border border-accent-500/25 bg-linear-to-r from-bg-950 via-panel-950 to-bg-950 p-5 shadow-[0_0_40px_rgba(34,197,94,0.12)]">
+      <div class="relative mb-5">
+        <svg class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-accent-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.35-4.35" />
+        </svg>
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="Search games..."
+          class="w-full rounded-xl border border-border-800 bg-panel-900/95 py-3 pl-12 pr-4 text-text-100 focus:border-accent-500 focus:outline-none"
+        />
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3">
+        <button
+          v-for="category in categories"
+          :key="category.id"
+          @click="selectCategory(category.id)"
+          :class="[
+            'rounded-lg border px-4 py-2 text-sm font-semibold transition-all duration-200',
+            selectedCategories.includes(category.id)
+              ? 'border-accent-400 bg-accent-500/15 text-accent-300 shadow-[0_0_16px_rgba(34,197,94,0.25)]'
+              : 'border-border-800 bg-panel-900 text-text-300 hover:border-accent-500 hover:text-accent-300'
+          ]"
         >
-          <option value="all">All Categories</option>
-          <option v-for="cat in categories.filter(c => c.id !== 'all')" :key="cat.id" :value="cat.id">
-            {{ cat.name }}
-          </option>
-        </select>
-        
-        <select 
+          {{ category.name }}
+        </button>
+
+        <select v-if="hasFiltersActive"
           v-model="sortBy"
-          class="bg-panel-900 text-text-100 px-4 py-2 rounded-lg border border-border-800 focus:border-accent-500 focus:outline-none transition-colors"
+          class="ml-auto rounded-lg border border-border-800 bg-panel-900 px-4 py-2 text-text-100 focus:border-accent-500 focus:outline-none"
         >
-          <option value="featured">Featured</option>
-          <option value="rating">Best Rated</option>
-          <option value="price-low">Price: Low to High</option>
-          <option value="price-high">Price: High to Low</option>
+          <option value="featured">Sort: Featured</option>
+          <option value="rating">Sort: Rating</option>
+          <option value="price-low">Sort: Price Low</option>
+          <option value="price-high">Sort: Price High</option>
         </select>
       </div>
     </div>
 
-    <!-- DEFAULT STORE VIEW -->
-    <div v-if="!isSearchActive">
-      
-      <!-- FEATURED GAME -->
-      <div class="mb-12 bg-panel-900 rounded-xl overflow-hidden border border-border-800 hover:border-accent-500 transition-all duration-300 hover:glow">
-        <div class="relative h-96">
-          <img :src="featuredGame.image" :alt="featuredGame.title" class="w-full h-full object-cover" />
-          <div class="absolute inset-0 bg-linear-to-t from-bg-950 via-bg-950/60 to-transparent"></div>
-          <div class="absolute bottom-0 left-0 p-8 w-full">
-            <div class="flex items-end justify-between">
-              <div class="flex-1">
-                <h2 class="text-4xl font-bold text-text-100 mb-2">{{ featuredGame.title }}</h2>
-                <p class="text-text-300 mb-4">{{ featuredGame.description }}</p>
-                <div class="flex items-center gap-4">
-                  <div class="flex items-center gap-1">
-                    <svg class="w-5 h-5 text-accent-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                    </svg>
-                    <span class="text-text-100 font-semibold">{{ featuredGame.rating }}</span>
-                  </div>
-                </div>
+    <section class="mb-8">
+      <div class="mb-3 flex items-center justify-between">
+        <!-- <h2 class="text-4xl font-bold text-text-100">Store</h2> -->
+        <p v-if="hasFiltersActive" class="text-sm text-text-400">
+          Showing {{ filteredGames.length }} result(s)
+        </p>
+      </div>
+
+     
+      <div v-if="!hasFiltersActive" class="overflow-hidden rounded-2xl border border-accent-500/35 bg-panel-900 shadow-[0_0_28px_rgba(34,197,94,0.18)]">
+        <div class="relative h-64 md:h-72">
+          <img :src="featuredGame.image" :alt="featuredGame.title" class="h-full w-full object-cover" />
+          <div class="absolute inset-0 bg-linear-to-r from-bg-950/90 via-bg-950/50 to-transparent"></div>
+          <div class="absolute left-0 top-0 p-4">
+            <span class="rounded-md bg-accent-500 px-3 py-1 text-sm font-bold uppercase text-bg-950">Featured</span>
+          </div>
+          <div class="absolute bottom-0 w-full p-6 md:p-8">
+            <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+              <div>
+                <h3 class="text-3xl font-bold text-text-100 md:text-4xl">{{ featuredGame.title }}</h3>
+                <p class="mt-1 text-text-300">{{ featuredGame.description }}</p>
               </div>
-              <div class="flex flex-col items-end gap-4">
-                <span class="text-4xl font-bold text-accent-400">${{ featuredGame.price }}</span>
-                <button @click="buyGame(featuredGame)" class="bg-accent-500 hover:bg-accent-600 text-bg-950 px-8 py-3 rounded-lg font-semibold transition-all duration-200 hover:scale-105 active:scale-95 glow-sm">
+              <div class="flex items-center gap-4">
+                <span class="text-4xl font-black text-accent-400">${{ featuredGame.price }}</span>
+                <button
+                  @click="buyGame(featuredGame)"
+                  class="rounded-lg bg-accent-500 px-6 py-3 font-bold text-bg-950 transition-all duration-200 hover:scale-105 hover:bg-accent-400"
+                >
                   Buy Now
                 </button>
               </div>
@@ -246,142 +237,52 @@ function buyGame(game) {
         </div>
       </div>
 
-      <!-- RECOMMENDED GAMES -->
-      <section class="mb-12">
-        <h3 class="text-2xl font-bold text-text-100 mb-6">Recommended For You</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div 
-            v-for="game in recommendedGames" 
-            :key="game.id"
-            class="bg-panel-900 rounded-xl overflow-hidden border border-border-800 hover:border-accent-500 transition-all duration-300 hover:scale-105 hover:glow-sm group"
-          >
-            <div class="relative">
-              <img :src="game.cover" :alt="game.title" class="w-full h-64 object-cover" />
-              <button 
-                @click="toggleFavorite(game.id)"
-                class="absolute top-3 right-3 bg-bg-950/80 p-2 rounded-full hover:bg-bg-950 transition-colors"
-              >
-                <svg class="w-5 h-5" :class="game.favorite ? 'text-accent-400 fill-accent-400' : 'text-text-300'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                  <path d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/>
-                </svg>
-              </button>
-            </div>
-            <div class="p-5">
-              <div class="flex items-start justify-between mb-2">
-                <h4 class="text-lg font-semibold text-text-100 group-hover:text-accent-400 transition-colors">{{ game.title }}</h4>
-              </div>
-              <div class="flex items-center gap-2 mb-3">
-                <span class="text-sm text-text-500 bg-panel-800 px-2 py-1 rounded">{{ game.genre }}</span>
-                <div class="flex items-center gap-1">
-                  <svg class="w-4 h-4 text-accent-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                  </svg>
-                  <span class="text-sm text-text-300">{{ game.rating }}</span>
-                </div>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="text-2xl font-bold text-accent-400">${{ game.price }}</span>
-                <button @click="buyGame(game)" class="bg-accent-500 hover:bg-accent-600 text-bg-950 px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 hover:scale-105 active:scale-95">
-                  Buy
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+    </section>
 
-      <!-- GAME CATEGORIES -->
-      <section class="mb-12">
-        <h3 class="text-2xl font-bold text-text-100 mb-6">Browse by Category</h3>
-        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-          <button 
-            v-for="category in categories" 
-            :key="category.id"
-            @click="selectCategory(category.id)"
-            class="bg-panel-900 hover:bg-panel-800 border border-border-800 hover:border-accent-500 rounded-xl p-6 text-center transition-all duration-300 hover:scale-105 group"
-          >
-            <div class="text-4xl mb-2">{{ category.icon }}</div>
-            <div class="text-text-300 group-hover:text-accent-400 font-medium transition-colors">{{ category.name }}</div>
-          </button>
-        </div>
-      </section>
+    <section>
+      <h3 v-if="!hasFiltersActive" class="mb-6 text-2xl font-bold text-text-100">Recommended Games</h3>
 
-      <!-- NEWS SECTION -->
-      <section>
-        <h3 class="text-2xl font-bold text-text-100 mb-6">Latest News</h3>
-        <div class="space-y-4">
-          <div 
-            v-for="item in news" 
-            :key="item.id"
-            class="bg-panel-900 border border-border-800 hover:border-accent-500 rounded-xl p-5 flex gap-5 transition-all duration-300 hover:glow-sm group"
-          >
-            <img :src="item.thumbnail" :alt="item.game" class="w-32 h-32 rounded-lg object-cover" />
-            <div class="flex-1">
-              <div class="flex items-start justify-between mb-2">
-                <div>
-                  <span class="text-sm text-accent-400 font-medium">{{ item.game }}</span>
-                  <h4 class="text-lg font-semibold text-text-100 group-hover:text-accent-400 transition-colors">{{ item.title }}</h4>
-                </div>
-                <span class="text-sm text-text-500">{{ item.timestamp }}</span>
-              </div>
-              <p class="text-text-300">{{ item.description }}</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-    </div>
-
-    <!-- SEARCH RESULTS VIEW -->
-    <div v-else>
-      <h3 class="text-2xl font-bold text-text-100 mb-2">Search Results</h3>
-      <p class="text-text-500 mb-6">Found {{ filteredGames.length }} game(s) for "{{ searchQuery }}"</p>
-      
-      <div v-if="filteredGames.length === 0" class="text-center py-20">
-        <svg class="w-24 h-24 mx-auto text-text-700 mb-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-          <path d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
-        </svg>
-        <p class="text-xl text-text-500">No games found</p>
-        <p class="text-text-700 mt-2">Try adjusting your search or filters</p>
+      <div v-if="filteredGames.length === 0" class="rounded-xl border border-border-800 bg-panel-900 p-12 text-center">
+        <p class="text-xl text-text-300">No games match your filters.</p>
       </div>
 
-      <div v-else class="space-y-4">
-        <div 
-          v-for="game in filteredGames" 
+      <div v-else class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div
+          v-for="game in filteredGames"
           :key="game.id"
-          class="bg-panel-900 border border-border-800 hover:border-accent-500 rounded-xl overflow-hidden flex transition-all duration-300 hover:glow-sm group"
+          class="group overflow-hidden rounded-xl border border-border-800 bg-panel-900 transition-all duration-300 hover:scale-[1.02] hover:border-accent-500 hover:shadow-[0_0_20px_rgba(34,197,94,0.16)]"
         >
-          <img :src="game.cover" :alt="game.title" class="w-48 h-48 object-cover" />
-          <div class="flex-1 p-6 flex flex-col">
-            <div class="flex items-start justify-between mb-2">
-              <div>
-                <h4 class="text-xl font-bold text-text-100 group-hover:text-accent-400 transition-colors mb-1">{{ game.title }}</h4>
-                <div class="flex items-center gap-3">
-                  <span class="text-sm text-text-500 bg-panel-800 px-2 py-1 rounded">{{ game.genre }}</span>
-                  <div class="flex items-center gap-1">
-                    <svg class="w-4 h-4 text-accent-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                    </svg>
-                    <span class="text-sm text-text-300 font-medium">{{ game.rating }}</span>
-                  </div>
-                </div>
-              </div>
-              <span class="text-3xl font-bold text-accent-400">${{ game.price }}</span>
+          <div class="relative">
+            <img :src="game.cover" :alt="game.title" class="h-48 w-full object-cover" />
+            <button
+              @click="toggleFavorite(game.id)"
+              class="absolute right-3 top-3 rounded-full bg-bg-950/80 p-2 transition-colors hover:bg-bg-950"
+            >
+              <svg class="h-5 w-5" :class="game.favorite ? 'fill-accent-400 text-accent-400' : 'text-text-300'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
+              </svg>
+            </button>
+          </div>
+
+          <div class="p-4">
+            <h4 class="text-xl font-semibold text-text-100 transition-colors group-hover:text-accent-300">{{ game.title }}</h4>
+            <div class="mt-1 flex items-center justify-between text-sm">
+              <span class="text-text-400">{{ game.genre }}</span>
+              <span class="font-semibold text-accent-300">★ {{ game.rating }}</span>
             </div>
-            <p class="text-text-300 mb-4 flex-1">{{ game.description }}</p>
-            <div class="flex gap-3">
-              <button class="bg-panel-800 hover:bg-panel-850 text-text-100 px-6 py-2 rounded-lg font-medium transition-all duration-200 hover:scale-105 border border-border-800 hover:border-accent-500">
-                Details
-              </button>
-              <button @click="buyGame(game)" class="bg-accent-500 hover:bg-accent-600 text-bg-950 px-6 py-2 rounded-lg font-semibold transition-all duration-200 hover:scale-105 active:scale-95">
-                Add to Cart
+            <div class="mt-4 flex items-center justify-between">
+              <span class="text-3xl font-black text-accent-400">${{ game.price }}</span>
+              <button
+                @click="buyGame(game)"
+                class="rounded-lg bg-accent-500 px-4 py-2 font-bold text-bg-950 transition-all duration-200 hover:scale-105 hover:bg-accent-400"
+              >
+                Buy
               </button>
             </div>
           </div>
         </div>
       </div>
-    </div>
-
+    </section>
   </div>
 </template>
 
