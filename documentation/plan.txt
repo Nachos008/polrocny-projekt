@@ -1,0 +1,11 @@
+Profil
+-vlavo hore profile picture, vedla Meno,
+-pod obrazkom nejaky status(online/offline)
+-informacie o tebe: popis, kedy bol ucet vytvoreny, kolko hier vlastnis, tvoje oblubene hry, posledna hrana hra, 
+-vpravo tlacitko edit profile
+-pod vidis friends list, vies kliknut a rozbalit vsetkych, add friend, kliknut na frienda a otvori jeho profil
+13.4.
+
+<div class="mx-auto w-full max-w-7xl">
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+divka obklopuju cely profile

@@ -1,5 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue'
+import LibraryGameRow from '@/components/library-game-row.vue'
+import LibraryStatCard from '@/components/library-stat-card.vue'
 
 const searchQuery = ref('')
 const openedGameId = ref(null)
@@ -12,7 +14,9 @@ const libraryGames = [
     genre: 'Action',
     hoursPlayed: 38,
     lastPlayed: '2 days ago',
+    lastPlayedHoursAgo: 48,
     installed: true,
+    favorite: true,
     size: '74 GB',
     description: 'Fast-paced action campaign with stealth and open mission routes.'
   },
@@ -23,7 +27,9 @@ const libraryGames = [
     genre: 'Sci-Fi',
     hoursPlayed: 84,
     lastPlayed: '5 hours ago',
+    lastPlayedHoursAgo: 5,
     installed: true,
+    favorite: false,
     size: '112 GB',
     description: 'Explore deep-space sectors, build ships, and complete faction contracts.'
   },
@@ -34,7 +40,9 @@ const libraryGames = [
     genre: 'Adventure',
     hoursPlayed: 21,
     lastPlayed: '1 week ago',
+    lastPlayedHoursAgo: 168,
     installed: true,
+    favorite: true,
     size: '56 GB',
     description: 'Story-driven fantasy adventure focused on exploration and puzzles.'
   },
@@ -45,7 +53,9 @@ const libraryGames = [
     genre: 'Sports',
     hoursPlayed: 9,
     lastPlayed: '3 days ago',
+    lastPlayedHoursAgo: 72,
     installed: false,
+    favorite: false,
     size: '42 GB',
     description: 'Arcade football experience with online seasons and team upgrades.'
   },
@@ -56,11 +66,66 @@ const libraryGames = [
     genre: 'RPG',
     hoursPlayed: 67,
     lastPlayed: 'yesterday',
+    lastPlayedHoursAgo: 24,
     installed: true,
+    favorite: true,
     size: '96 GB',
     description: 'Party-based RPG with deep classes, dungeons, and skill trees.'
   }
 ]
+
+const totalPlaytimeHours = computed(() => {
+  return libraryGames.reduce((total, game) => total + game.hoursPlayed, 0)
+})
+
+const installedGamesCount = computed(() => {
+  return libraryGames.filter(game => game.installed).length
+})
+
+const favoriteGames = computed(() => {
+  return libraryGames.filter(game => game.favorite)
+})
+
+const mostPlayedGames = computed(() => {
+  return [...libraryGames]
+    .sort((a, b) => b.hoursPlayed - a.hoursPlayed)
+    .slice(0, 3)
+})
+
+const recentGames = computed(() => {
+  return [...libraryGames]
+    .sort((a, b) => a.lastPlayedHoursAgo - b.lastPlayedHoursAgo)
+    .slice(0, 4)
+})
+
+const achievementsUnlocked = computed(() => {
+  return Math.floor(totalPlaytimeHours.value / 2) + favoriteGames.value.length * 4
+})
+
+const statisticsCards = computed(() => {
+  return [
+    {
+      title: 'Total Playtime',
+      value: `${totalPlaytimeHours.value}h`,
+      hint: `${libraryGames.length} games in your library`
+    },
+    {
+      title: 'Achievements Unlocked',
+      value: `${achievementsUnlocked.value}`,
+      hint: 'Across all installed games'
+    },
+    {
+      title: 'Favorite Games',
+      value: `${favoriteGames.value.length}`,
+      hint: 'Hand-picked by you'
+    },
+    {
+      title: 'Installed Games',
+      value: `${installedGamesCount.value}`,
+      hint: 'Ready to launch right now'
+    }
+  ]
+})
 
 const filteredLibraryGames = computed(() => {
   const query = searchQuery.value.trim().toLowerCase()
@@ -99,17 +164,20 @@ function playGame(game) {
 
 <template>
   <div class="mx-auto w-full max-w-7xl">
-    <div class="grid grid-cols-1 gap-6 lg:grid-cols-4">
-      <section class="lg:col-span-3 rounded-xl border border-border-800 bg-panel-900/80 p-4 md:p-5">
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+      <section class="rounded-xl border border-border-800 bg-panel-900/80 p-4 md:p-5">
         <div v-if="openedGame" class="space-y-5">
           <div class="flex items-center justify-between">
-            <h2 class="text-3xl font-bold text-text-100">{{ openedGame.title }}</h2>
             <button
               @click="closeOpenedGame"
-              class="rounded-lg border border-border-700 bg-panel-800 px-4 py-2 font-semibold text-text-200 transition-colors hover:border-accent-500 hover:text-accent-300"
-            >
-              Back to Library
+              class="inline-flex items-center gap-2 rounded-lg border border-border-700 bg-panel-800 px-3 py-2 font-semibold text-text-200 transition-colors hover:border-accent-500 hover:text-accent-300">
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="m15 18-6-6 6-6" />
+              </svg>
+              Back
             </button>
+            <h2 class="text-3xl font-bold text-text-100">{{ openedGame.title }}</h2>
+            <div class="w-16"></div>
           </div>
 
           <div class="overflow-hidden rounded-xl border border-border-800 bg-bg-950/60">
@@ -151,46 +219,66 @@ function playGame(game) {
         </div>
 
         <div v-else class="space-y-4">
-          <h2 class="text-2xl font-bold text-text-100">Your Games</h2>
+          <h2 class="text-2xl font-bold text-text-100">Your Statistics</h2>
 
-          <div v-if="filteredLibraryGames.length === 0" class="rounded-xl border border-border-800 bg-bg-950/50 p-10 text-center">
-            <p class="text-lg text-text-300">No games found for your search.</p>
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <LibraryStatCard
+              v-for="card in statisticsCards"
+              :key="card.title"
+              :title="card.title"
+              :value="card.value"
+              :hint="card.hint"
+            />
           </div>
 
-          <div v-else class="space-y-3">
-            <article
-              v-for="game in filteredLibraryGames"
-              :key="game.id"
-              class="flex flex-col gap-3 rounded-xl border border-border-800 bg-bg-950/50 p-3 transition-colors hover:border-accent-500 md:flex-row md:items-center"
-            >
-              <img :src="game.cover" :alt="game.title" class="h-28 w-full rounded-lg object-cover md:w-44" />
+          <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
+            <div class="rounded-xl border border-border-800 bg-bg-950/45 p-4">
+              <h3 class="mb-3 text-lg font-bold text-text-100">Most Played Games</h3>
+              <div class="space-y-3">
+                <LibraryGameRow
+                  v-for="game in mostPlayedGames"
+                  :key="`most-played-${game.id}`"
+                  :game="game"
+                  @play="playGame"
+                  @details="openGame"
+                />
+              </div>
+            </div>
 
-              <div class="min-w-0 flex-1">
-                <h3 class="truncate text-2xl font-bold text-text-100">{{ game.title }}</h3>
-                <p class="text-text-400">{{ game.hoursPlayed }} hours played</p>
-                <p class="text-sm text-text-500">{{ game.installed ? 'Installed' : 'Not Installed' }} • {{ game.genre }}</p>
+            <div class="space-y-4">
+              <div class="rounded-xl border border-border-800 bg-bg-950/45 p-4">
+                <h3 class="mb-3 text-lg font-bold text-text-100">Recent Games</h3>
+                <div class="space-y-2">
+                  <button
+                    v-for="game in recentGames"
+                    :key="`recent-${game.id}`"
+                    @click="openGame(game.id)"
+                    class="flex w-full items-center justify-between rounded-lg border border-border-800 bg-panel-900/80 px-3 py-2 text-left transition-colors hover:border-accent-500">
+                    <span class="font-semibold text-text-100">{{ game.title }}</span>
+                    <span class="text-sm text-text-400">{{ game.lastPlayed }}</span>
+                  </button>
+                </div>
               </div>
 
-              <div class="flex gap-2">
-                <button
-                  @click="playGame(game)"
-                  class="rounded-lg bg-accent-500 px-6 py-2.5 font-bold text-bg-950 transition-all duration-200 hover:scale-105 hover:bg-accent-400"
-                >
-                  Play
-                </button>
-                <button
-                  @click="openGame(game.id)"
-                  class="rounded-lg border border-border-700 bg-panel-800 px-5 py-2.5 font-semibold text-text-200 transition-colors hover:border-accent-500 hover:text-accent-300"
-                >
-                  Details
-                </button>
+              <div class="rounded-xl border border-border-800 bg-bg-950/45 p-4">
+                <h3 class="mb-3 text-lg font-bold text-text-100">Favorite Games</h3>
+                <div class="flex flex-wrap gap-2">
+                  <button
+                    v-for="game in favoriteGames"
+                    :key="`favorite-${game.id}`"
+                    @click="openGame(game.id)"
+                    class="rounded-full border border-accent-500/50 bg-accent-500/10 px-3 py-1.5 text-sm font-semibold text-accent-200 transition-colors hover:border-accent-400 hover:bg-accent-500/20"
+                  >
+                    {{ game.title }}
+                  </button>
+                </div>
               </div>
-            </article>
+            </div>
           </div>
         </div>
       </section>
 
-      <aside class="rounded-xl border border-border-800 bg-panel-900/80 p-4 lg:h-[80vh] lg:overflow-hidden lg:sticky lg:top-4">
+      <aside class="h-screen overflow-hidden border border-border-800 bg-panel-900/80 p-4 lg:fixed lg:top-0 lg:w-80 lg:right-4">
         <div class="flex h-full flex-col">
         <div class="relative mb-4">
           <svg class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -211,7 +299,7 @@ function playGame(game) {
           No matching games.
         </div>
 
-        <div v-else class="space-y-2 overflow-y-auto pr-1 custom-scroll">
+        <div v-else class="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1 custom-scroll">
           <button
             v-for="game in filteredLibraryGames"
             :key="`list-${game.id}`"

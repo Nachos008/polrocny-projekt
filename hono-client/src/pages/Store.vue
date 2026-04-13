@@ -1,6 +1,9 @@
 <script setup>
 import { ref, computed } from 'vue'
 
+//copmonents
+import GameCard from '@/components/game-card.vue'
+
 // Search state
 const searchQuery = ref('')
 const selectedCategories = ref([])
@@ -16,7 +19,7 @@ const featuredGame = {
   description: 'Experience the future in this groundbreaking open-world RPG'
 }
 
-const recommendedGames = [
+const recommendedGames = ref([
   {
     id: 2,
     title: 'Stellar Warriors',
@@ -77,7 +80,7 @@ const recommendedGames = [
     description: 'Explore uncharted islands and discover ancient secrets',
     favorite: false
   }
-]
+])
 
 const categories = [
   { id: 'action', name: 'Action', icon: '⚔️' },
@@ -105,7 +108,7 @@ function getGameCategoryTokens(game) {
 }
 
 const filteredGames = computed(() => {
-  let games = [...recommendedGames]
+  let games = [...recommendedGames.value]
   
   // Filter by search query
   if (searchQuery.value.trim()) {
@@ -138,7 +141,7 @@ const filteredGames = computed(() => {
 
 // Methods
 function toggleFavorite(gameId) {
-  const game = recommendedGames.find(g => g.id === gameId)
+  const game = recommendedGames.value.find(g => g.id === gameId)
   if (game) {
     game.favorite = !game.favorite
   }
@@ -252,34 +255,10 @@ function buyGame(game) {
           :key="game.id"
           class="group overflow-hidden rounded-xl border border-border-800 bg-panel-900 transition-all duration-300 hover:scale-[1.02] hover:border-accent-500 hover:shadow-[0_0_20px_rgba(34,197,94,0.16)]"
         >
-          <div class="relative">
-            <img :src="game.cover" :alt="game.title" class="h-48 w-full object-cover" />
-            <button
-              @click="toggleFavorite(game.id)"
-              class="absolute right-3 top-3 rounded-full bg-bg-950/80 p-2 transition-colors hover:bg-bg-950"
-            >
-              <svg class="h-5 w-5" :class="game.favorite ? 'fill-accent-400 text-accent-400' : 'text-text-300'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
-              </svg>
-            </button>
-          </div>
 
-          <div class="p-4">
-            <h4 class="text-xl font-semibold text-text-100 transition-colors group-hover:text-accent-300">{{ game.title }}</h4>
-            <div class="mt-1 flex items-center justify-between text-sm">
-              <span class="text-text-400">{{ game.genre }}</span>
-              <span class="font-semibold text-accent-300">★ {{ game.rating }}</span>
-            </div>
-            <div class="mt-4 flex items-center justify-between">
-              <span class="text-3xl font-black text-accent-400">${{ game.price }}</span>
-              <button
-                @click="buyGame(game)"
-                class="rounded-lg bg-accent-500 px-4 py-2 font-bold text-bg-950 transition-all duration-200 hover:scale-105 hover:bg-accent-400"
-              >
-                Buy
-              </button>
-            </div>
-          </div>
+          <GameCard :game="game" @toggle-favorite="toggleFavorite" @buy-game="buyGame" />
+          
+          
         </div>
       </div>
     </section>

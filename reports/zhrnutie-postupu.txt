@@ -1,0 +1,41 @@
+- Uprava Store stranky a oddelenie opakovanej casti karty hry do samostatneho komponentu.
+- Vytvorenie komponentu game-card.vue s obsahom: obrazok hry, indikator favorite a tlacidlo Buy.
+- Napojenie komponentu game-card.vue v Store.vue cez import a emit eventy.
+- Uprava datovej struktury recommendedGames na reactive ref, aby fungovali zmeny favorite stavu.
+- Aktualizacia filtrovania a metod v Store.vue na pristup cez recommendedGames.value.
+- Zachovanie povodneho vizualu kariet pri sucasnom znizeni duplicity kodu.
+
+- Prechod na upravu Library stranky s cielom zmenit defaultny obsah bez vybratej hry.
+- Nahradenie povodneho zoznamu hier statistickym dashboardom.
+- Doplnenie zakladnych metrik: total playtime, achievements unlocked, favorite games, installed games.
+- Doplnenie odvodenej metriky achievements unlocked cez jednoduchy vypocet z playtime a favorite hier.
+
+- Rozsirenie dat jednotlivych hier o favorite a lastPlayedHoursAgo.
+- Priprava podkladov pre triedenie najhranejsich hier a najnovsie hranych hier.
+- Vytvorenie computed pola mostPlayedGames (top podla hoursPlayed).
+- Vytvorenie computed pola recentGames (podla najmensieho lastPlayedHoursAgo).
+- Vytvorenie computed pola favoriteGames pre rychle zobrazenie oblubenych titulov.
+
+- Uprava hlavneho layoutu Library sekcie pre prehladnejsie rozdelenie hlavneho obsahu a bocneho panelu.
+- Zachovanie funkcnosti praveho panelu: vyhladavanie, all games zoznam, otvorenie detailu klikom.
+- Nastavenie scroll oblasti v pravom paneli pre stabilne zobrazenie pri vacsom pocte hier.
+
+- Doplnenie sekcie Most Played Games v defaultnom pohlade Library.
+- Doplnenie sekcie Recent Games s rychlym prechodom na detail hry.
+- Doplnenie sekcie Favorite Games formou vyberovych tlacidiel.
+- Pouzitie zvyraznenych statistik pre rychly prehlad po otvoreni Library.
+
+- Vytvorenie komponentu library-game-row.vue pre opakovany riadok hry.
+- Presun opakovanych prvkov (cover, nazov, playtime, stav instalacie, tlacidla) do library-game-row.vue.
+- Napojenie library-game-row.vue v Library.vue cez props a udalosti play/details.
+
+- Vytvorenie komponentu library-stat-card.vue pre jednotny styl statistik.
+- Napojenie library-stat-card.vue na computed pole statisticsCards.
+- Zjednotenie prezentacie statistik v jednom vizualnom style.
+
+- Uprava pohladu vybratej hry: pridanie malej sipky spat v tlacidle Back.
+- Zachovanie akcie Back na navrat z detailu hry do defaultneho statistickeho pohladu.
+- Zachovanie existujucej akcie Play v detaile aj v zoznamovych castiach.
+
+- Kontrola diagnostiky po upravach bez nahlasenych chyb v upravenych suboroch.
+- Vysledok: cistejsia struktura komponentov, mensia duplicita, prehladnejsi defaultny stav Library.
