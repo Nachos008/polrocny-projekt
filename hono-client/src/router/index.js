@@ -3,10 +3,15 @@ import Store from '../pages/Store.vue'
 import Library from '../pages/Library.vue'
 import Settings from '../pages/Settings.vue'
 import Profile from '../pages/Profile.vue'
+import Login from '../pages/Login.vue'
+import Register from '../pages/Register.vue'
 
 
 
 const routes = [
+  { path: '/', redirect: '/login' },
+  { path: '/login', component: Login, meta: { authPage: true } },
+  { path: '/register', component: Register, meta: { authPage: true } },
   { path: '/store', component: Store },
   { path: '/library', component: Library },
   { path: '/settings', component: Settings },

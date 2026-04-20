@@ -1,7 +1,6 @@
 <template>
-  <div class="flex h-screen bg-bg-950">
-    <!-- Sidebar -->
-    <aside class="w-52 gap-3 bg-bg-900 flex flex-col py-4 border-r border-border-800">
+  <div :class="isAuthPage ? 'min-h-screen bg-bg-950' : 'flex h-screen bg-bg-950'">
+    <aside v-if="!isAuthPage" class="w-52 gap-3 bg-bg-900 flex flex-col py-4 border-r border-border-800">
 
       <!-- Logo -->
       <div class="flex items-center gap-2 px-4 pb-6 pt-1">
@@ -45,25 +44,36 @@
 
     </aside>
 
-    <!-- Page content -->
-    <main class="flex-1 p-6 bg-bg-950 text-accent-300 overflow-y-auto">
+    <main :class="isAuthPage ? 'min-h-screen overflow-y-auto p-6 text-accent-300' : 'flex-1 overflow-y-auto bg-bg-950 p-6 text-accent-300'">
       <RouterView />
     </main>
   </div>
 </template>
 
-<style scoped>
-@reference './styles.css';
+<script setup>
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 
+const route = useRoute()
+
+const isAuthPage = computed(() => route.meta.authPage === true)
+</script>
+
+<style scoped>
 .nav-link {
-  @apply flex items-center gap-3 px-3 py-4 rounded-lg text-lg text-text-300;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 0.75rem;
+  border-radius: 0.5rem;
+  color: var(--color-text-300);
+  font-size: 1.125rem;
   transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out, transform 0.15s ease-in-out, box-shadow 0.2s ease-in-out;
 }
 
 .nav-link:hover {
-  /* @apply text-text-100 bg-panel-900; */
-  @apply text-accent-400;
-  transform: translatex(20px);
+  color: var(--color-accent-400);
+  transform: translateX(20px);
 }
 
 .nav-link:active {
@@ -74,14 +84,19 @@
 
 
 .nav-link-logout {
-  @apply flex items-center gap-3 px-3 py-4 rounded-lg text-lg text-text-300;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 0.75rem;
+  border-radius: 0.5rem;
+  color: var(--color-text-300);
+  font-size: 1.125rem;
   transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out, transform 0.15s ease-in-out, box-shadow 0.2s ease-in-out;
 }
 
 .nav-link-logout:hover {
-  /* @apply text-text-100 bg-panel-900; */
-  @apply text-danger-500;
-  transform: translatey(3px);
+  color: var(--color-danger-500);
+  transform: translateY(3px);
 }
 
 
@@ -96,13 +111,15 @@
 }
 
 .nav-link.router-link-active {
-  @apply text-accent-400  border-l-2 border-accent-300 rounded-l-none;
-  /* background-image: radial-gradient(circle at bottom right, oklch(0.84 0.20 145)  -400%, transparent 100%); */
+  color: var(--color-accent-400);
+  border-left: 2px solid var(--color-accent-300);
+  border-radius: 0;
+  padding-left: 0.625rem;
 }
 
 .nav-link.router-link-active:hover {
   transform: none;
-  @apply text-accent-400;
+  color: var(--color-accent-400);
   background: none;
 }
 

@@ -20,15 +20,15 @@ function handleDetails() {
 <template>
   <article
     class="flex flex-col gap-3 rounded-xl border border-border-800 bg-bg-950/50 p-3 transition-colors hover:border-accent-500 md:flex-row md:items-center">
-    <img :src="game.cover" :alt="game.title" class="h-28 w-full rounded-lg object-cover md:w-44" />
+    <img :src="game.cover" :alt="game.title" class="h-14 w-full rounded-lg object-cover md:w-22" />
 
     <div class="min-w-0 flex-1">
-      <h3 class="truncate text-2xl font-bold text-text-100">{{ game.title }}</h3>
+      <h3 class="truncate text-lg font-bold text-text-100">{{ game.title }}</h3>
       <p class="text-text-400">{{ game.hoursPlayed }} hours played</p>
       <p class="text-sm text-text-500">{{ game.installed ? 'Installed' : 'Not Installed' }} • {{ game.genre }}</p>
     </div>
 
-    <div class="flex gap-2">
+    <div class="flex gap-2 flex-col">
       <button
         @click="handlePlay"
         class="rounded-lg bg-accent-500 px-6 py-2.5 font-bold text-bg-950 transition-all duration-200 hover:scale-105 hover:bg-accent-400">

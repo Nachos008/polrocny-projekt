@@ -8,7 +8,6 @@
 - Prechod na upravu Library stranky s cielom zmenit defaultny obsah bez vybratej hry.
 - Nahradenie povodneho zoznamu hier statistickym dashboardom.
 - Doplnenie zakladnych metrik: total playtime, achievements unlocked, favorite games, installed games.
-- Doplnenie odvodenej metriky achievements unlocked cez jednoduchy vypocet z playtime a favorite hier.
 
 - Rozsirenie dat jednotlivych hier o favorite a lastPlayedHoursAgo.
 - Priprava podkladov pre triedenie najhranejsich hier a najnovsie hranych hier.
